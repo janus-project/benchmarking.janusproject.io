@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>io.janusproject.benchmarking.api</groupId>
-	<artifactId>io.janusproject.benchmarking.benchs</artifactId>
+	<artifactId>benchs</artifactId>
 
 	<dependencies>
 		<dependency>
@@ -18,7 +18,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.janusproject.benchmarking</groupId>
-			<artifactId>io.janusproject.benchmarking.jei</artifactId>
+			<artifactId>jei</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.arakhne.afc.core</groupId>

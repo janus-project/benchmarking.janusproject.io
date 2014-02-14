@@ -47,8 +47,8 @@
 	<!-- ==== Modules' configuration         === -->
 	<!-- ======================================= -->
 	<modules>
-		<module>io.janusproject.benchmarking.jei</module>
-		<module>io.janusproject.benchmarking.benchs</module>
+		<module>jei</module>
+		<module>benchs</module>
 	</modules>
 
 	<!-- ========================================= -->
@@ -81,7 +81,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.janusproject.benchmarking</groupId>
-				<artifactId>io.janusproject.benchmarking.jei</artifactId>
+				<artifactId>jei</artifactId>
 				<version>${benchmarking.version}</version>
 			</dependency>
 			<dependency>

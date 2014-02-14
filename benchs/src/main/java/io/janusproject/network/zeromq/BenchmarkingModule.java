@@ -36,7 +36,7 @@ import com.google.inject.name.Names;
  * @mavengroupid $GroupId$
  * @mavenartifactid $ArtifactId$
  */
-public class BenchmarkingZMQNetworkModule extends AbstractModule {
+class BenchmarkingModule extends AbstractModule {
 
 	private final Class<? extends EventSerializer> serializer;
 	private final Class<? extends EventEncrypter> encrypter;
@@ -45,7 +45,7 @@ public class BenchmarkingZMQNetworkModule extends AbstractModule {
 	 * @param serializer - type of the serializer to instance.
 	 * @param encrypter - type of the encrypter to instance.
 	 */
-	public BenchmarkingZMQNetworkModule(
+	public BenchmarkingModule(
 			Class<? extends EventSerializer> serializer,
 			Class<? extends EventEncrypter> encrypter) {
 		this.serializer = serializer;

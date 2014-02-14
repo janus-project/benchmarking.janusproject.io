@@ -37,6 +37,7 @@ import java.util.UUID;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 
 /** Abstract implementation of a benchmarking tool for the ZeroMQ layer on a single host.
  * 
@@ -46,10 +47,7 @@ import com.google.inject.Injector;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-public abstract class AbstractZMQSingleHostBench extends CsvBench<BenchRun> {
-
-	private static final String SOURCE_PEER = "tcp://localhost:29118"; //$NON-NLS-1$
-	private static final String TARGET_PEER = "tcp://localhost:19118"; //$NON-NLS-1$;
+public abstract class AbstractLocalhostBench extends CsvBench<BenchRun> {
 
 	/** Sender. */
 	@Inject
@@ -78,7 +76,7 @@ public abstract class AbstractZMQSingleHostBench extends CsvBench<BenchRun> {
 	 * @param directory is the directory that shold contains the CSV file.
 	 * @throws IOException
 	 */
-	public AbstractZMQSingleHostBench(File directory) throws IOException {
+	public AbstractLocalhostBench(File directory) throws IOException {
 		super(directory,
 				"Order", //$NON-NLS-1$
 				"Name", //$NON-NLS-1$
@@ -92,22 +90,25 @@ public abstract class AbstractZMQSingleHostBench extends CsvBench<BenchRun> {
 	protected Collection<BenchRun> determineRuns(String benchFunctionName) {
 		return Collections.singleton(new BenchRun(benchFunctionName));
 	}
+	
+	/** Replies the injection module to use.
+	 * 
+	 * @return the module.
+	 */
+	protected abstract Module getInjectionModule();
 
 	@Override
 	public void initialize() throws Exception {
 		super.initialize();
 		
-		System.setProperty(ZeroMQConfig.PUB_URI, SOURCE_PEER);
-		Injector injector = Guice.createInjector(
-				new BenchmarkingZMQNetworkModule(
-						JavaBinaryEventSerializer.class,
-						PlainTextEncrypter.class));
+		System.setProperty(ZeroMQConfig.PUB_URI, Constants.LOCALHOST_SOURCE_PEER);
+		Injector injector = Guice.createInjector(getInjectionModule());
 		
 		this.networkSource = injector.getInstance(Network.class);
 
-		System.setProperty(ZeroMQConfig.PUB_URI, TARGET_PEER);
+		System.setProperty(ZeroMQConfig.PUB_URI, Constants.LOCALHOST_TARGET_PEER);
 		injector = Guice.createInjector(
-				new BenchmarkingZMQNetworkModule(
+				new BenchmarkingModule(
 						JavaBinaryEventSerializer.class,
 						PlainTextEncrypter.class));
 		this.networkTarget = injector.getInstance(Network.class);
@@ -127,7 +128,7 @@ public abstract class AbstractZMQSingleHostBench extends CsvBench<BenchRun> {
 		this.networkSource.awaitRunning();
 		this.networkTarget.awaitRunning();
 		
-		this.networkSource.connectPeer(TARGET_PEER);
+		this.networkSource.connectPeer(Constants.LOCALHOST_TARGET_PEER);
 		
 		setNumberOfCalls(1); // Call the "bench" functions once time
 		setNumberOfRuns(2); // Generate multi rows in the CSV

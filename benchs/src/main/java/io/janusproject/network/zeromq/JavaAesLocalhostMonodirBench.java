@@ -22,8 +22,12 @@ package io.janusproject.network.zeromq;
 import java.io.File;
 import java.io.IOException;
 
+import com.google.inject.Module;
+
 /** Benchmarking of the ZeroMQ layer:
  * <ul>
+ * <li>Serialization: Java.</li>
+ * <li>Encrypting: AES.</li>
  * <li>Source on host A</li>
  * <li>Target on host A</li>
  * <li>Receiver is not replying.</li>
@@ -35,14 +39,21 @@ import java.io.IOException;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-public class ZMQSingleHostNoReplyBench extends AbstractZMQSingleHostBench {
+public class JavaAesLocalhostMonodirBench extends AbstractLocalhostBench {
 
 	/**
 	 * @param directory
 	 * @throws IOException
 	 */
-	public ZMQSingleHostNoReplyBench(File directory) throws IOException {
+	public JavaAesLocalhostMonodirBench(File directory) throws IOException {
 		super(directory);
+	}
+
+	@Override
+	protected Module getInjectionModule() {
+		return new BenchmarkingModule(
+				JavaBinaryEventSerializer.class,
+				AESEventEncrypter.class);
 	}
 
 	/**

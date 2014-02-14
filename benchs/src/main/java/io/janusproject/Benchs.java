@@ -23,7 +23,7 @@ import io.janusproject.benchmarking.Bench;
 import io.janusproject.benchmarking.BenchConstants;
 import io.janusproject.benchmarking.BenchLauncher;
 import io.janusproject.benchmarking.jei.JanusExperienceIndex;
-import io.janusproject.network.zeromq.ZMQSingleHostNoReplyBench;
+import io.janusproject.network.zeromq.JavaPlainLocalhostMonodirBench;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -76,7 +76,7 @@ public class Benchs {
 				//
 				// ZeroMQ
 				//
-				ZMQSingleHostNoReplyBench.class
+				JavaPlainLocalhostMonodirBench.class
 				);
 		System.exit(0);
 	}

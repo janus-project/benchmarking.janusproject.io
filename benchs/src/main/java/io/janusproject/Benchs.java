@@ -23,6 +23,9 @@ import io.janusproject.benchmarking.Bench;
 import io.janusproject.benchmarking.BenchConstants;
 import io.janusproject.benchmarking.BenchLauncher;
 import io.janusproject.benchmarking.jei.JanusExperienceIndex;
+import io.janusproject.network.zeromq.GsonAesLocalhostMonodirBench;
+import io.janusproject.network.zeromq.GsonPlainLocalhostMonodirBench;
+import io.janusproject.network.zeromq.JavaAesLocalhostMonodirBench;
 import io.janusproject.network.zeromq.JavaPlainLocalhostMonodirBench;
 
 import java.awt.BorderLayout;
@@ -46,6 +49,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -76,7 +80,10 @@ public class Benchs {
 				//
 				// ZeroMQ
 				//
-				JavaPlainLocalhostMonodirBench.class
+				JavaPlainLocalhostMonodirBench.class,
+				JavaAesLocalhostMonodirBench.class,
+				GsonPlainLocalhostMonodirBench.class,
+				GsonAesLocalhostMonodirBench.class
 				);
 		System.exit(0);
 	}
@@ -118,6 +125,16 @@ public class Benchs {
 			}
 
 			output = new File(output, "janusBenchmarks"); //$NON-NLS-1$
+
+			JFileChooser fileChooser = new JFileChooser(output);
+			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+				output = fileChooser.getSelectedFile();
+			}
+			else {
+				return; // exit from the main
+			}
+			
 			SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd-HHmmss"); //$NON-NLS-1$
 			output = new File(output, fmt.format(new Date()));
 			System.out.println(output.getAbsolutePath());

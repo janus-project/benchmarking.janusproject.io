@@ -19,8 +19,21 @@
  */
 package io.janusproject.network.zeromq;
 
+import java.io.File;
+import java.io.IOException;
 
-/** Abstract implementation of a benchmarking tool for the ZeroMQ layer on a single host.
+import org.arakhne.afc.vmutil.locale.Locale;
+
+import com.google.inject.Module;
+
+/** Benchmarking of the ZeroMQ layer:
+ * <ul>
+ * <li>Serialization: Gson.</li>
+ * <li>Encrypting: None.</li>
+ * <li>Source on host A</li>
+ * <li>Target on host B</li>
+ * <li>Receiver is replying.</li>
+ * </ul>
  * 
  * @author $Author: sgalland$
  * @version $FullVersion$
@@ -28,14 +41,21 @@ package io.janusproject.network.zeromq;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-interface Constants {
+public class GsonPlainRemotehostBench extends AbstractRemotehostBench {
 
-	/** URI of the source peer on localhost.
+	/**
+	 * @param directory
+	 * @throws IOException
 	 */
-	public final String LOCALHOST_SOURCE_PEER = "tcp://localhost:29118"; //$NON-NLS-1$
-	
-	/** URI of the target peer on localhost.
-	 */
-	public final String LOCALHOST_TARGET_PEER = "tcp://localhost:19118"; //$NON-NLS-1$;
+	public GsonPlainRemotehostBench(File directory) throws IOException {
+		super(directory, Locale.getString("BENCH_NAME")); //$NON-NLS-1$
+	}
+
+	@Override
+	protected Module getInjectionModule() {
+		return new BenchmarkingModule(
+				GsonEventSerializer.class,
+				PlainTextEncrypter.class);
+	}
 	
 }

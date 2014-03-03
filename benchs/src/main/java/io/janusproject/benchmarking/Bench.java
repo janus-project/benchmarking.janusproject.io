@@ -385,13 +385,13 @@ public abstract class Bench<R extends BenchRun> {
 							}
 							testAverage /= measurements.length;
 						}
-						long stdDev = 0;
+						double stdDev = 0;
 						if (measurements.length>0) {
 							for(long x : measurements) {
 								stdDev += (x-testAverage)*(x-testAverage);
 							}
 							stdDev /= measurements.length;
-							stdDev = Math.round(Math.sqrt(stdDev));
+							stdDev = Math.sqrt(stdDev);
 						}
 						run.setDurations(
 								(long)runAverage,

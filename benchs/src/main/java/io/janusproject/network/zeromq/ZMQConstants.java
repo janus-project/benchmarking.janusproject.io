@@ -19,21 +19,9 @@
  */
 package io.janusproject.network.zeromq;
 
-import java.io.File;
-import java.io.IOException;
 
-import org.arakhne.afc.vmutil.locale.Locale;
 
-import com.google.inject.Module;
-
-/** Benchmarking of the ZeroMQ layer:
- * <ul>
- * <li>Serialization: Java.</li>
- * <li>Encrypting: None.</li>
- * <li>Source on host A</li>
- * <li>Target on host A</li>
- * <li>Receiver is not replying.</li>
- * </ul>
+/** Abstract implementation of a benchmarking tool for the ZeroMQ layer.
  * 
  * @author $Author: sgalland$
  * @version $FullVersion$
@@ -41,28 +29,30 @@ import com.google.inject.Module;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-public class JavaPlainLocalhostMonodirBench extends AbstractLocalhostBench {
+interface ZMQConstants {
 
-	/**
-	 * @param directory
-	 * @throws IOException
+	/** URI of the source peer on localhost.
 	 */
-	public JavaPlainLocalhostMonodirBench(File directory) throws IOException {
-		super(directory, Locale.getString("BENCH_NAME")); //$NON-NLS-1$
-	}
-
-	@Override
-	protected Module getInjectionModule() {
-		return new BenchmarkingModule(
-				JavaBinaryEventSerializer.class,
-				PlainTextEncrypter.class);
-	}
-
-	/**
-	 * @throws Exception
+	public final String LOCALHOST_SOURCE_PEER = "tcp://localhost:29118"; //$NON-NLS-1$
+	
+	/** URI of the target peer on localhost.
 	 */
-	public void benchPublish() throws Exception {
-		this.networkSource.publish(this.spaceId, this.scope, this.defaultEvent);
-	}
+	public final String LOCALHOST_TARGET_PEER = "tcp://localhost:19118"; //$NON-NLS-1$;
+	
+	/** Address of the sender.
+	 */
+	public final String SENDER_ADDRESS = "04376c83-6fb8-4b7c-9196-94c32a58bdeb"; //$NON-NLS-1$
+
+	/** Address of the replier.
+	 */
+	public final String REPLIER_ADDRESS = "47a209b0-39a7-4fe9-b9fb-07a82a6e48f9"; //$NON-NLS-1$
+
+	/** Port of the replier.
+	 */
+	public final int REPLIER_PORT = 24316;
+
+	/** Timeout used to assumed that messages were lost over the network.
+	 */
+	public final long NETWORK_TIMEOUT = 5*60*1000;
 	
 }

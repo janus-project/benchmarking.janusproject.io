@@ -28,11 +28,11 @@ import com.google.inject.Module;
 
 /** Benchmarking of the ZeroMQ layer:
  * <ul>
- * <li>Serialization: Java.</li>
- * <li>Encrypting: None.</li>
+ * <li>Serialization: Gson.</li>
+ * <li>Encrypting: AES.</li>
  * <li>Source on host A</li>
- * <li>Target on host A</li>
- * <li>Receiver is not replying.</li>
+ * <li>Target on host B</li>
+ * <li>Receiver is replying.</li>
  * </ul>
  * 
  * @author $Author: sgalland$
@@ -41,28 +41,21 @@ import com.google.inject.Module;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-public class JavaPlainLocalhostMonodirBench extends AbstractLocalhostBench {
+public class GsonAesRemotehostBench extends AbstractRemotehostBench {
 
 	/**
 	 * @param directory
 	 * @throws IOException
 	 */
-	public JavaPlainLocalhostMonodirBench(File directory) throws IOException {
+	public GsonAesRemotehostBench(File directory) throws IOException {
 		super(directory, Locale.getString("BENCH_NAME")); //$NON-NLS-1$
 	}
 
 	@Override
 	protected Module getInjectionModule() {
 		return new BenchmarkingModule(
-				JavaBinaryEventSerializer.class,
-				PlainTextEncrypter.class);
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public void benchPublish() throws Exception {
-		this.networkSource.publish(this.spaceId, this.scope, this.defaultEvent);
+				GsonEventSerializer.class,
+				AESEventEncrypter.class);
 	}
 	
 }

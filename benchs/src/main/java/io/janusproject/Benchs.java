@@ -22,11 +22,16 @@ package io.janusproject;
 import io.janusproject.benchmarking.Bench;
 import io.janusproject.benchmarking.BenchConstants;
 import io.janusproject.benchmarking.BenchLauncher;
+import io.janusproject.benchmarking.PropertyBench;
 import io.janusproject.benchmarking.jei.JanusExperienceIndex;
 import io.janusproject.network.zeromq.GsonAesLocalhostMonodirBench;
+import io.janusproject.network.zeromq.GsonAesRemotehostBench;
 import io.janusproject.network.zeromq.GsonPlainLocalhostMonodirBench;
+import io.janusproject.network.zeromq.GsonPlainRemotehostBench;
 import io.janusproject.network.zeromq.JavaAesLocalhostMonodirBench;
+import io.janusproject.network.zeromq.JavaAesRemotehostBench;
 import io.janusproject.network.zeromq.JavaPlainLocalhostMonodirBench;
+import io.janusproject.network.zeromq.JavaPlainRemotehostBench;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,12 +43,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -54,6 +63,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
 import org.arakhne.afc.vmutil.VMCommandLine;
@@ -83,7 +93,11 @@ public class Benchs {
 				JavaPlainLocalhostMonodirBench.class,
 				JavaAesLocalhostMonodirBench.class,
 				GsonPlainLocalhostMonodirBench.class,
-				GsonAesLocalhostMonodirBench.class
+				GsonAesLocalhostMonodirBench.class,
+				JavaPlainRemotehostBench.class,
+				JavaAesRemotehostBench.class,
+				GsonPlainRemotehostBench.class,
+				GsonAesRemotehostBench.class
 				);
 		System.exit(0);
 	}
@@ -108,6 +122,32 @@ public class Benchs {
 			JanusExperienceIndex.main(new String[0]);
 		}
 		else if (!benchsToRun.isEmpty()) {
+			// Enter additional parameters
+			Properties properties = new Properties();
+			for(Class<?> benchType : benchsToRun) {
+				while (benchType!=null && !Object.class.equals(benchType)) {
+					for(Annotation a : benchType.getDeclaredAnnotations()) {
+						if (PropertyBench.class.isAssignableFrom(a.annotationType())) {
+							for(String name : ((PropertyBench)a).names()) {
+								if (!properties.containsKey(name)) {
+									TextInputGUI g = new TextInputGUI(name);
+									g.setVisible(true);
+									String value = g.getValue();
+									if (value==null) {
+										return; // exit from the main
+									}
+									properties.setProperty(name, value);
+									g.dispose();
+								}
+							}
+							break;
+						}
+					}
+					benchType = benchType.getSuperclass();
+				}
+			}
+			
+			// Create the temp directory
 			String tmpDir;
 			tmpDir = System.getenv("TEMP"); //$NON-NLS-1$
 			if (tmpDir==null || "".equals(tmpDir)) { //$NON-NLS-1$
@@ -149,12 +189,17 @@ public class Benchs {
 			float percentagePerBench = 100f / benchsToRun.size();
 			float progression = 0f;
 			
+			// Ensure that most of the unused objects are removed from memory
+			System.gc();
+			System.gc();
+			System.gc();
+						
 			for(Class<? extends Bench<?>> benchType : benchsToRun) {
 				if (isAssertEnabled) {
-					launchForDebug(output, benchType, progression, percentagePerBench);
+					launchForDebug(output, benchType, properties, progression, percentagePerBench);
 				}
 				else {
-					launchInSubProcess(output, benchType, serv, progression, percentagePerBench);
+					launchInSubProcess(output, benchType, serv, properties, progression, percentagePerBench);
 				}
 				progression += percentagePerBench;
 			}
@@ -163,7 +208,10 @@ public class Benchs {
 		}
 	}
 	
-	private static void launchForDebug(File output, Class<? extends Bench<?>> benchType, float progression, float percentage) throws Exception {
+	private static void launchForDebug(File output, Class<? extends Bench<?>> benchType, Properties benchProperties, float progression, float percentage) throws Exception {
+		if (benchProperties!=null) {
+			System.getProperties().putAll(benchProperties);
+		}
 		BenchLauncher.main(
 				new String[] {
 						output.getAbsolutePath(),
@@ -173,27 +221,38 @@ public class Benchs {
 				});
 	}
 	
-	private static void launchInSubProcess(File output, Class<? extends Bench<?>> benchType, ExecutorService service, float progression, float progressionWindow) throws Exception {
+	private static void launchInSubProcess(File output, Class<? extends Bench<?>> benchType, ExecutorService service, Properties benchProperties, float progression, float progressionWindow) throws Exception {
 		Process process = null;
 		try {
-			String[] cmd = new String[] {
-					VMCommandLine.getVMBinary(),
-					"-Xmx"+BenchConstants.MAX_MEMORY+"m", //$NON-NLS-1$ //$NON-NLS-2$
-					"-classpath", //$NON-NLS-1$
-					System.getProperty("java.class.path"), //$NON-NLS-1$
-					BenchLauncher.class.getCanonicalName(),
-					output.getAbsolutePath(),
-					Float.toString(progression),
-					Float.toString(progressionWindow),
-					benchType.getCanonicalName()
-			};
-			for(int i=0; i<cmd.length; ++i) {
+			List<String> cmd = new ArrayList<>();
+			cmd.add(VMCommandLine.getVMBinary());
+			if (benchProperties!=null) {
+				for(Entry<Object,Object> entry : benchProperties.entrySet()) {
+					cmd.add("-D"+entry.getKey()+"="+entry.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+			cmd.add("-Xmx"+BenchConstants.MAX_MEMORY+"m"); //$NON-NLS-1$ //$NON-NLS-2$
+			cmd.add("-classpath"); //$NON-NLS-1$
+			cmd.add(System.getProperty("java.class.path")); //$NON-NLS-1$
+			cmd.add(BenchLauncher.class.getCanonicalName());
+			cmd.add(output.getAbsolutePath());
+			cmd.add(Float.toString(progression));
+			cmd.add(Float.toString(progressionWindow));
+			cmd.add(benchType.getCanonicalName());
+			for(int i=0; i<cmd.size(); ++i) {
 				if (i>0) System.out.print(' ');
-				System.out.print(cmd[i]);
+				System.out.print(cmd.get(i));
 			}
 			System.out.print("\n"); //$NON-NLS-1$
+			String[] array = new String[cmd.size()];
+			cmd.toArray(array);
+			cmd.clear();
+			cmd = null;
+			System.gc();
+			System.gc();
+			System.gc();
 			process = Runtime.getRuntime().exec(
-					cmd,
+					array,
 					null,
 					null);
 			OutputRunner r1 = new OutputRunner(process.getInputStream(), System.out);
@@ -252,6 +311,68 @@ public class Benchs {
 		 */
 		public void stop() {
 			this.stop = true;
+		}
+		
+	}
+	
+	private static class TextInputGUI extends JDialog implements ActionListener {
+		
+		private static final long serialVersionUID = -4124681578914766500L;
+		
+		private final JTextField value;
+		private final AtomicBoolean isOk = new AtomicBoolean(false);
+		
+		/**
+		 * @param name - name of the property to enter.
+		 */
+		public TextInputGUI(String name) {
+			super((Window)null, Locale.getString(Benchs.class, "INPUT_PROPERTY", name)); //$NON-NLS-1$
+			setPreferredSize(new Dimension(600, 200));
+			setLayout(new BorderLayout());
+			setModal(true);
+			this.value = new JTextField();
+			add(BorderLayout.CENTER, this.value);
+
+			JPanel btPanel = new JPanel();
+			add(BorderLayout.SOUTH, btPanel);
+			
+			JButton bt = new JButton(Locale.getString(Benchs.class, "SAVE")); //$NON-NLS-1$
+			bt.setDefaultCapable(true);
+			btPanel.add(bt);
+			bt.setActionCommand("SAVE"); //$NON-NLS-1$
+			bt.addActionListener(this);
+
+			bt = new JButton(Locale.getString(Benchs.class, "CANCEL")); //$NON-NLS-1$
+			btPanel.add(bt);
+			bt.setActionCommand("CANCEL"); //$NON-NLS-1$
+			bt.addActionListener(this);
+
+			pack();
+		}
+
+		/** Replies the entered value.
+		 * 
+		 * @return the value, or <code>null</code> if no value was entered.
+		 */
+		public String getValue() {
+			if (this.isOk.get()) {
+				return this.value.getText();
+			}
+			return null;
+		}
+		
+		/** {@inheritDoc}
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if ("SAVE".equals(e.getActionCommand())) { //$NON-NLS-1$
+				this.isOk.set(true);
+				setVisible(false);
+			}
+			else if ("CANCEL".equals(e.getActionCommand())) { //$NON-NLS-1$
+				this.isOk.set(false);
+				setVisible(false);
+			}
 		}
 		
 	}

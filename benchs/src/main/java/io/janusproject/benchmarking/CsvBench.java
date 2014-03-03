@@ -41,16 +41,19 @@ import java.util.logging.Logger;
 public abstract class CsvBench<R extends BenchRun> extends Bench<R> {
 
 	private final Object[] headers;
+	private final String title;
 	private BufferedWriter writer;
 
 	/**
 	 * @param directory is the directory that shold contains the CSV file.
+	 * @param title - title of the benchmarks. 
 	 * @param headers - headers of the columns in the CSV file.
 	 * @throws IOException
 	 */
-	public CsvBench(File directory, Object... headers) throws IOException {
+	public CsvBench(File directory, String title, Object... headers) throws IOException {
 		super(directory);
 		this.headers = headers;
+		this.title = title;
 		this.writer = null;
 	}
 		
@@ -148,6 +151,11 @@ public abstract class CsvBench<R extends BenchRun> extends Bench<R> {
 	 */
 	private void writeHeader(Object... columns) throws IOException {
 		assert(this.writer!=null);
+		if (this.title!=null && !"".equals(this.title)) { //$NON-NLS-1$
+			this.writer.write("#------------ "); //$NON-NLS-1$
+			this.writer.write(this.title);
+			this.writer.write(" ------------\n"); //$NON-NLS-1$
+		}
 		for(int i=0; i<columns.length; ++i) {
 			if (i>0) this.writer.write("\t"); //$NON-NLS-1$
 			else this.writer.write("#"); //$NON-NLS-1$

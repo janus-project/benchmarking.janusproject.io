@@ -22,17 +22,19 @@ package io.janusproject.network.zeromq;
 import io.janusproject.benchmarking.BenchRun;
 import io.janusproject.benchmarking.CsvBench;
 import io.janusproject.kernel.Network;
-import io.janusproject.kernel.Scopes;
 import io.sarl.lang.core.Event;
 import io.sarl.lang.core.Scope;
 import io.sarl.lang.core.SpaceID;
 import io.sarl.util.OpenEventSpaceSpecification;
+import io.sarl.util.Scopes;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+
+import org.arakhne.afc.vmutil.locale.Locale;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -73,17 +75,18 @@ public abstract class AbstractLocalhostBench extends CsvBench<BenchRun> {
 	protected Event defaultEvent;
 	
 	/**
-	 * @param directory is the directory that shold contains the CSV file.
+	 * @param directory - the directory that shold contains the CSV file.
+	 * @param title - the title of the benchmarks.
 	 * @throws IOException
 	 */
-	public AbstractLocalhostBench(File directory) throws IOException {
-		super(directory,
-				"Order", //$NON-NLS-1$
-				"Name", //$NON-NLS-1$
-				"Global Duration (ns)", //$NON-NLS-1$
-				"Operation Duration (ns)", //$NON-NLS-1$
-				"Operation Standard Deviation", //$NON-NLS-1$
-				"OS Load Average"); //$NON-NLS-1$
+	public AbstractLocalhostBench(File directory, String title) throws IOException {
+		super(directory, title,
+				Locale.getString("COLUMN_ROW_NUMBER"), //$NON-NLS-1$
+				Locale.getString("COLUMN_BENCH_NAME"), //$NON-NLS-1$
+				Locale.getString("COLUMN_GLOBAL_DURATION"), //$NON-NLS-1$
+				Locale.getString("COLUMN_OPERATION_DURATION"), //$NON-NLS-1$
+				Locale.getString("COLUMN_OPERATION_STANDARD_DEVIATION"), //$NON-NLS-1$
+				Locale.getString("COLUMN_OS_LOAD_AVERAGE")); //$NON-NLS-1$
 	}
 
 	@Override
@@ -101,19 +104,19 @@ public abstract class AbstractLocalhostBench extends CsvBench<BenchRun> {
 	public void initialize() throws Exception {
 		super.initialize();
 		
-		System.setProperty(ZeroMQConfig.PUB_URI, Constants.LOCALHOST_SOURCE_PEER);
+		System.setProperty(ZeroMQConfig.PUB_URI, ZMQConstants.LOCALHOST_SOURCE_PEER);
 		Injector injector = Guice.createInjector(getInjectionModule());
 		
 		this.networkSource = injector.getInstance(Network.class);
 
-		System.setProperty(ZeroMQConfig.PUB_URI, Constants.LOCALHOST_TARGET_PEER);
+		System.setProperty(ZeroMQConfig.PUB_URI, ZMQConstants.LOCALHOST_TARGET_PEER);
 		injector = Guice.createInjector(
 				new BenchmarkingModule(
 						JavaBinaryEventSerializer.class,
 						PlainTextEncrypter.class));
 		this.networkTarget = injector.getInstance(Network.class);
 
-		this.scope = Scopes.nullScope();
+		this.scope = Scopes.allParticipants();
 		this.contextId = UUID.randomUUID();
 		this.id = UUID.randomUUID();
 		this.spaceId = new SpaceID(
@@ -128,7 +131,7 @@ public abstract class AbstractLocalhostBench extends CsvBench<BenchRun> {
 		this.networkSource.awaitRunning();
 		this.networkTarget.awaitRunning();
 		
-		this.networkSource.connectPeer(Constants.LOCALHOST_TARGET_PEER);
+		this.networkSource.connectPeer(ZMQConstants.LOCALHOST_TARGET_PEER);
 		
 		setNumberOfCalls(1); // Call the "bench" functions once time
 		setNumberOfRuns(2); // Generate multi rows in the CSV

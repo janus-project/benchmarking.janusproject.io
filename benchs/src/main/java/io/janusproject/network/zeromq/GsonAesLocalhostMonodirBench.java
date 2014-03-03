@@ -22,6 +22,8 @@ package io.janusproject.network.zeromq;
 import java.io.File;
 import java.io.IOException;
 
+import org.arakhne.afc.vmutil.locale.Locale;
+
 import com.google.inject.Module;
 
 /** Benchmarking of the ZeroMQ layer:
@@ -46,7 +48,7 @@ public class GsonAesLocalhostMonodirBench extends AbstractLocalhostBench {
 	 * @throws IOException
 	 */
 	public GsonAesLocalhostMonodirBench(File directory) throws IOException {
-		super(directory);
+		super(directory, Locale.getString("BENCH_NAME")); //$NON-NLS-1$
 	}
 
 	@Override

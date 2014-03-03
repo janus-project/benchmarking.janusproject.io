@@ -32,7 +32,7 @@ public class BenchRun {
 	private String name;
 	private long durationPerCall = -1;
 	private long runDuration = -1;
-	private long callStandardDeviation = 0;
+	private double callStandardDeviation = 0;
 	private float timeScalingFactor = 1f;
 	private long timeIncrement = 0;
 	
@@ -81,7 +81,7 @@ public class BenchRun {
 	 * 
 	 * @return the standard deviation.
 	 */
-	public long getCallStandardDeviation() {
+	public double getCallStandardDeviation() {
 		return this.callStandardDeviation;
 	}
 
@@ -91,7 +91,7 @@ public class BenchRun {
 	 * @param callDuration is the average duration of one call in the run.
 	 * @param callStandardDeviation is the standard deviation of the calls.
 	 */
-	void setDurations(long runDuration, long callDuration, long callStandardDeviation) {
+	void setDurations(long runDuration, long callDuration, double callStandardDeviation) {
 		this.runDuration = runDuration;
 		this.durationPerCall = callDuration;
 		this.callStandardDeviation = callStandardDeviation;

@@ -19,21 +19,12 @@
  */
 package io.janusproject.network.zeromq;
 
-import java.io.File;
-import java.io.IOException;
+import io.sarl.lang.core.Event;
 
-import org.arakhne.afc.vmutil.locale.Locale;
+import java.io.Serializable;
 
-import com.google.inject.Module;
-
-/** Benchmarking of the ZeroMQ layer:
- * <ul>
- * <li>Serialization: Java.</li>
- * <li>Encrypting: None.</li>
- * <li>Source on host A</li>
- * <li>Target on host A</li>
- * <li>Receiver is not replying.</li>
- * </ul>
+/** Implementation of an event that is
+ * going over the network during the benchmarking process.
  * 
  * @author $Author: sgalland$
  * @version $FullVersion$
@@ -41,28 +32,42 @@ import com.google.inject.Module;
  * @mavenartifactid $ArtifactId$
  * @since 2.0.0
  */
-public class JavaPlainLocalhostMonodirBench extends AbstractLocalhostBench {
+class RemoteBenchEvent extends Event implements Serializable {
+
+	private static final long serialVersionUID = -3831445504743195115L;
+	
+	private final long sendingTime;
+	
+	private transient long arrivalTime;
 
 	/**
-	 * @param directory
-	 * @throws IOException
 	 */
-	public JavaPlainLocalhostMonodirBench(File directory) throws IOException {
-		super(directory, Locale.getString("BENCH_NAME")); //$NON-NLS-1$
-	}
-
-	@Override
-	protected Module getInjectionModule() {
-		return new BenchmarkingModule(
-				JavaBinaryEventSerializer.class,
-				PlainTextEncrypter.class);
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public void benchPublish() throws Exception {
-		this.networkSource.publish(this.spaceId, this.scope, this.defaultEvent);
+	public RemoteBenchEvent() {
+		this.sendingTime = System.nanoTime();
 	}
 	
+	/** Replies the nano time at which this message was sent.
+	 * 
+	 * @return the sending time.
+	 */
+	public long getSendingTime() {
+		return this.sendingTime;
+	}
+	
+	/** Replies the nano time at which this message was arrived.
+	 * 
+	 * @return the sending time.
+	 */
+	public long getArrivalTime() {
+		return this.arrivalTime;
+	}
+
+	/** Set the time of arrival of the message.
+	 * 
+	 * @param time
+	 */
+	public void setArrivalTime(long time) {
+		this.arrivalTime = time;
+	}
+
 }

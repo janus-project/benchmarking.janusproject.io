@@ -19,9 +19,9 @@
  */
 package io.janusproject.network.zeromq;
 
+import io.janusproject.JanusConfig;
 import io.janusproject.kernel.DistributedSpace;
 import io.janusproject.kernel.Network;
-import io.janusproject.repository.JanusConfig;
 import io.sarl.lang.core.Address;
 import io.sarl.lang.core.Event;
 import io.sarl.lang.core.Scope;
@@ -148,7 +148,7 @@ public class Replier {
 
 		String pubUri = "tcp://"+getPrimaryAdapter().getHostAddress()+":"+ZMQConstants.REPLIER_PORT; //$NON-NLS-1$ //$NON-NLS-2$
 		System.err.println("PUB SOCKET:"+pubUri); //$NON-NLS-1$
-		System.setProperty(ZeroMQConfig.PUB_URI, pubUri);
+		System.setProperty(JanusConfig.PUB_URI, pubUri);
 
 		Replier r = new Replier(new BenchmarkingModule(serialType, encrypType));
 		
@@ -171,8 +171,8 @@ public class Replier {
 		 */
 		public DSpace() {
 			this.spaceId = new SpaceID(
-					UUID.fromString(JanusConfig.DEFAULT_JANUS_CONTEXT_ID),
-					UUID.fromString(JanusConfig.DEFAULT_JANUS_SPACE_ID),
+					UUID.fromString(JanusConfig.getProperty(JanusConfig.DEFAULT_CONTEXT_ID)),
+					UUID.fromString(JanusConfig.getProperty(JanusConfig.DEFAULT_SPACE_ID)),
 					OpenEventSpaceSpecification.class);
 			this.address = new Address(
 					this.spaceId,

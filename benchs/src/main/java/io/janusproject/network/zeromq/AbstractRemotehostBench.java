@@ -19,11 +19,11 @@
  */
 package io.janusproject.network.zeromq;
 
+import io.janusproject.JanusConfig;
 import io.janusproject.benchmarking.CsvBench;
 import io.janusproject.benchmarking.PropertyBench;
 import io.janusproject.kernel.DistributedSpace;
 import io.janusproject.kernel.Network;
-import io.janusproject.repository.JanusConfig;
 import io.sarl.lang.core.Address;
 import io.sarl.lang.core.Event;
 import io.sarl.lang.core.Scope;
@@ -93,14 +93,14 @@ public abstract class AbstractRemotehostBench extends CsvBench<RemoteBenchRun> {
 	public void initialize() throws Exception {
 		super.initialize();
 
-		System.setProperty(ZeroMQConfig.PUB_URI, ZMQConstants.LOCALHOST_SOURCE_PEER);
+		System.setProperty(JanusConfig.PUB_URI, ZMQConstants.LOCALHOST_SOURCE_PEER);
 		Injector injector = Guice.createInjector(getInjectionModule());
 
 		this.network = injector.getInstance(Network.class);
 
 		this.spaceId = new SpaceID(
-				UUID.fromString(JanusConfig.DEFAULT_JANUS_CONTEXT_ID),
-				UUID.fromString(JanusConfig.DEFAULT_JANUS_SPACE_ID),
+				UUID.fromString(JanusConfig.getProperty(JanusConfig.DEFAULT_CONTEXT_ID)),
+				UUID.fromString(JanusConfig.getProperty(JanusConfig.DEFAULT_SPACE_ID)),
 				OpenEventSpaceSpecification.class);
 
 		this.network.startAsync();

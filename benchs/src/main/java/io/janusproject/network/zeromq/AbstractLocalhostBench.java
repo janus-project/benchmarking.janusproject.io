@@ -19,6 +19,7 @@
  */
 package io.janusproject.network.zeromq;
 
+import io.janusproject.JanusConfig;
 import io.janusproject.benchmarking.BenchRun;
 import io.janusproject.benchmarking.CsvBench;
 import io.janusproject.kernel.Network;
@@ -104,12 +105,12 @@ public abstract class AbstractLocalhostBench extends CsvBench<BenchRun> {
 	public void initialize() throws Exception {
 		super.initialize();
 		
-		System.setProperty(ZeroMQConfig.PUB_URI, ZMQConstants.LOCALHOST_SOURCE_PEER);
+		System.setProperty(JanusConfig.PUB_URI, ZMQConstants.LOCALHOST_SOURCE_PEER);
 		Injector injector = Guice.createInjector(getInjectionModule());
 		
 		this.networkSource = injector.getInstance(Network.class);
 
-		System.setProperty(ZeroMQConfig.PUB_URI, ZMQConstants.LOCALHOST_TARGET_PEER);
+		System.setProperty(JanusConfig.PUB_URI, ZMQConstants.LOCALHOST_TARGET_PEER);
 		injector = Guice.createInjector(
 				new BenchmarkingModule(
 						JavaBinaryEventSerializer.class,
